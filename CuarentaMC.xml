@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<modoCarrera>
+    <ganadosAhora>0</ganadosAhora>
+    <juegosGanados>0</juegosGanados>
+    <juegosJugados>0</juegosJugados>
+    <juegosPerdidos>0</juegosPerdidos>
+    <nivel>1</nivel>
+</modoCarrera>
