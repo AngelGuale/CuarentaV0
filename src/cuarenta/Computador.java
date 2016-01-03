@@ -4,6 +4,7 @@
  */
 package cuarenta;
 
+import cuarenta.GameState.Tipo;
 import java.util.*;
 import javax.swing.JOptionPane;
 
@@ -15,7 +16,7 @@ import javax.swing.JOptionPane;
 public class Computador extends Jugador implements Observer {
  FrMesa fr;
  int[] base=new int[11];
- 
+ TreeNode <Carta> gameTree;
 
     protected FrMesa getFr() {
         return fr;
@@ -401,7 +402,9 @@ public class Computador extends Jugador implements Observer {
     }
     
     public void movimientoPcNivel2(){
-      
+    //arbol
+        construyeArbolDeJuego();
+        
     colocaGanancia();
     imprimeGanancias();
     
@@ -480,6 +483,74 @@ public class Computador extends Jugador implements Observer {
         return 100-(frecuencia*100)/4;
     }
     
+    //************** aqui vamos a implementar el arbol de juego************///
+    private void construyeArbolDeJuego(){
+        TreeNode <GameState> gameTree=new TreeNode<GameState>(null);
+        GameState juegoActual=new GameState(this.getJuego().getMesa(), this.getJuego().getCaidas(), this.getMano(),this.getPuntos(),this.getJuego().getJugador().getPuntos(), this.getLlevadas().size(), this.getJuego().getJugador().getLlevadas().size(), null, Tipo.Max);
+      gameTree.data=juegoActual;  
+        
+        seteaHijos(gameTree);
+        printTree(gameTree);
+    }
+    private void seteaHijos(TreeNode<GameState> n){
+         
+        GameState game_act=n.data;
+         ArrayList <Carta> mano_copy=(ArrayList <Carta>) game_act.getManoActual();
+        System.out.println(mano_copy.size());
+        // if( mano_copy.isEmpty()) return;//caso base
+         if( game_act.getMano().isEmpty()) return;//caso base
+        
+        
+        for(Carta c: mano_copy){
+        ArrayList <GameState> hijos_data= game_act.getFutureWithCarta(c);
+            System.out.println("hijos :"+hijos_data.size());
+        for(GameState g: hijos_data){
+            n.addChild(g);
+                }
+        }
+        for(TreeNode h: n.children){
+            seteaHijos(h);
+        }
+        
+    }
+    
+    public void printTree(TreeNode<GameState>  tmpRoot) {
+
+        Queue<TreeNode> currentLevel = new LinkedList<TreeNode>();
+        Queue<TreeNode> nextLevel = new LinkedList<TreeNode>();
+
+        currentLevel.add(tmpRoot);
+        int nivel=0;
+        
+        while (!currentLevel.isEmpty()) {
+            System.out.println("Nivel "+nivel);
+            Iterator<TreeNode> iter = currentLevel.iterator();
+            while (iter.hasNext()) {
+                TreeNode<GameState> currentNode = iter.next();
+                for(TreeNode h: currentNode.children){
+                nextLevel.add(h);
+                }
+                 System.out.println("\nmano: "+currentNode.data.getMano());
+                System.out.println(" mesa"+currentNode.data.getMesa());
+            }
+            System.out.println();
+            currentLevel = nextLevel;
+            nextLevel = new LinkedList<TreeNode>();
+            nivel++;
+        }
+
+    }
+    private void imprimirGameTree(TreeNode<GameState> n){
+         GameState game_act=n.data;
+        
+         
+         
+               
+    }
+    /***** arbol de juego  end ****************/
+    
+    
+    //************* esta es una clase aparte ára que mueva luego **********/
      public class MueveLuego extends TimerTask {
      FrMesa fr;
         Carta c2;
