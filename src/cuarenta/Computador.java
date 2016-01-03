@@ -532,6 +532,7 @@ public class Computador extends Jugador implements Observer {
                 }
                  System.out.println("\nmano: "+currentNode.data.getMano());
                 System.out.println(" mesa"+currentNode.data.getMesa());
+                System.out.println(" puntos: "+currentNode.data.getEstado().puntos_propios+" "+currentNode.data.getEstado().puntos_rival);
             }
             System.out.println();
             currentLevel = nextLevel;

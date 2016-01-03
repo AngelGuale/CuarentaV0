@@ -17,11 +17,12 @@ public class GameState {
     private ArrayList <Carta> caidas;
     int[] base=new int[11];
     private ArrayList <Carta> mano;
-    int puntos_propios;
-    int puntos_rival;
-    int carton_propio;
-    int carton_rival;
+    //int puntos_propios;
+    //int puntos_rival;
+    //int carton_propio;
+    //int carton_rival;
     int valoracion;
+    private Estado estado;
     Carta cartaJugada;
     Carta mejorJugada;
         public enum Tipo{Min, Max}
@@ -33,10 +34,11 @@ public class GameState {
         this.mesa = mesa;
         this.caidas = caidas;
         this.mano = mano;
-        this.puntos_propios = puntos_propios;
-        this.puntos_rival = puntos_rival;
-        this.carton_propio = carton_propio;
-        this.carton_rival = carton_rival;
+        estado=new Estado();
+        estado.puntos_propios = puntos_propios;
+        estado.puntos_rival = puntos_rival;
+        estado.carton_propio = carton_propio;
+        estado.carton_rival = carton_rival;
         this.valoracion=-100;
         this.cartaJugada=cartaJugada;
         this.mejorJugada=null;
@@ -63,9 +65,49 @@ public class GameState {
                 //mano_probable.add(c2);
         }
     }
-
+    
+    
+    public GameState(ArrayList<Carta> mesa, ArrayList<Carta> caidas, ArrayList<Carta> mano, Estado estado,Carta cartaJugada, Tipo t) {
+        this.mesa = mesa;
+        this.caidas = caidas;
+        this.mano = mano;
+        this.estado=estado;
+        this.valoracion=-100;
+        this.cartaJugada=cartaJugada;
+        this.mejorJugada=null;
+        this.tipo=t;
+        
+        if(t==Tipo.Min){
+            mano_probable=new ArrayList <Carta>();
+        actualizaBase();
+        for (int i=0;i<base.length;i++){
+        base[i]=0;
+        }
+       
+        for (int i=1;i<5;i++){
+            if(base[i]<1){
+                Carta c=new Carta(i, 1);
+                mano_probable.add(c);
+            }
+         }
+       
+             //   Carta c=new Carta(5, 1);
+               // mano_probable.add(c);
+        
+                //Carta c2=new Carta(6, 1);
+                //mano_probable.add(c2);
+        }
+    }
     private GameState(ArrayList<Carta> mesa, ArrayList<Carta> caidas, ArrayList<Carta> mano, int puntos_propios, int puntos_rival, int carton_propio, int carton_rival) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Estado estado) {
+        this.estado = estado;
     }
 
     public ArrayList<Carta> getMesa() {
@@ -115,7 +157,7 @@ public class GameState {
       }
       
     }
-    public ArrayList<GameState> getFutureWithCarta(Carta c){
+    public ArrayList<GameState> getFutureWithCarta(Carta c) {
             // System.out.println("\nmano: "+this.getMano());
              //   System.out.println(" mesa"+this.getMesa());
              //System.out.println("\nmano: "+this.tipo);
@@ -129,16 +171,17 @@ public class GameState {
             ArrayList<Carta> mesa3=(ArrayList<Carta>) this.getMesa().clone();
             ArrayList<Carta> mano3=(ArrayList<Carta>) this.getMano().clone();
             ArrayList<Carta> mano_probable3=(ArrayList<Carta>) this.getManoActual().clone();
-            
-            ArrayList<Carta> caidas3=(ArrayList<Carta>) this.getCaidas().clone();
+                  Estado e3;
+            e3 = (Estado) this.getEstado().clone();
+      ArrayList<Carta> caidas3=(ArrayList<Carta>) this.getCaidas().clone();
             
             marcaParaLLevar(c, mesa3);
             
-            simulaMovimiento(c, mesa3, mano_probable3, caidas3);
-            carton_propio+=2;
+            simulaMovimiento(c, mesa3, mano_probable3, caidas3, e3, this.tipo);
+           // carton_propio+=2;
             
-            GameState llevar_state=new GameState(mesa3, caidas3, actualizaMano(mano_probable3, c, mano3), puntos_propios, puntos_rival, carton_propio, carton_rival, null,nuevoTipo(this.tipo));
-            futuros.add(llevar_state);
+            GameState llevar_state=new GameState(mesa3, caidas3, actualizaMano(mano_probable3, c, mano3),e3, c,nuevoTipo(this.tipo));
+          futuros.add(llevar_state);
         }else{
         
         //lanzar carta
@@ -149,10 +192,14 @@ public class GameState {
         ArrayList<Carta> caidas2=(ArrayList<Carta>) this.getCaidas().clone();
         caidas2.add(c);
         mesa2.add(c);
+            Estado e2;
+            e2 = (Estado) this.getEstado().clone();
         
         mano_probable2.remove(c);
         
-        GameState lanzar=new GameState(mesa2, caidas2, actualizaMano(mano_probable2, c, mano2), puntos_propios, puntos_rival, carton_propio, carton_rival, null, nuevoTipo(this.tipo));
+       GameState lanzar=new GameState(mesa2, caidas2, actualizaMano(mano_probable2, c, mano2), e2, c, nuevoTipo(this.tipo));
+   // GameState lanzar=(GameState) this.clone();
+         lanzar.tipo=nuevoTipo(this.tipo);
         futuros.add(lanzar);
        
         
@@ -335,7 +382,7 @@ public class GameState {
     
     
     
-      public int simulaMovimiento(Carta c, ArrayList<Carta> mesa,ArrayList<Carta> mano, ArrayList<Carta> caidas)
+      public int simulaMovimiento(Carta c, ArrayList<Carta> mesa,ArrayList<Carta> mano, ArrayList<Carta> caidas, Estado estado, Tipo tipo)
       {
           int valoracion=0;
             int suma=0;
@@ -358,18 +405,14 @@ public class GameState {
        
        mano.remove(c);//saca la carta de la mano del jugador
        
+        //this.setUltima(c);//ultima carta
        
-       //this.setUltima(c);//ultima carta
-       
-       
-       
-            //return true;
-            return valoracion;
+       return valoracion;
         }
         
       
         if(this.isEscalera(marcadas, c)){
-//            actualizaPuntos(c, marcadas, jug, true);
+         actualizaPuntos(c, marcadas, estado, true, tipo);
             
             for(Carta m: marcadas){
             mesa.remove(m);
@@ -383,6 +426,7 @@ public class GameState {
         mano.remove(c); //saca de la man0
         caidas.add(c);//añande carta a caidas
         
+        
         //jug.getLlevadas().add(c);// la pone en llevadas, suma a carton
        // jug.setUltima(c);//ultima carta
         
@@ -395,8 +439,9 @@ public class GameState {
 
         if(marcadas.size()>1&&isEscaleraSuma(marcadas, c) ){
         
+            actualizaPuntos(c, marcadas, estado, false, tipo);
             
-          //  actualizaPuntos(c, marcadas, jug, false);
+      
             
             for(Carta m: marcadas){
            mesa.remove(m);
@@ -498,32 +543,30 @@ public class GameState {
 
 }
     
-    public void actualizaPuntos(Carta tirada, ArrayList<Carta> marcadas, Jugador j, boolean escalera){
+    public void actualizaPuntos(Carta tirada, ArrayList<Carta> marcadas, Estado e, boolean escalera, Tipo tipo){
     Juego.Situacion s=ObtieneSituacion(tirada, marcadas, escalera);
-    if(!j.esta38){
+    if(!e.esta38(tipo)){
         
     switch(s){
         case Caida:
             //muestra mensaje
-         j.setPuntos(j.getPuntos()+2);  
+        e.actualizaPoints(tipo,2);  
             break;
         case CaidaEnRonda:   
             //muestra mensaje
-            
-            j.setPuntos(j.getPuntos()+4);   
-            break;
+                    e.actualizaPoints(tipo,4);
+                break;
         case CaidaYLimpia:
-             
-            j.setPuntos(j.getPuntos()+4);   
-            break;
+                    e.actualizaPoints(tipo,4);
+                 break;
          case  CaidaYLimpiaEnRonda:
         
-             j.setPuntos(j.getPuntos()+6); 
-             break;
+                        e.actualizaPoints(tipo,6);
+         break;
          case Limpia:
              
-             j.setPuntos(j.getPuntos()+2); 
-            break;
+                        e.actualizaPoints(tipo,2);
+        break;
              
     }
     }
@@ -531,8 +574,8 @@ public class GameState {
      switch(s){
     case Caida:
          
-        j.setPuntos(j.getPuntos()+2); 
-            break;
+                   e.actualizaPoints(tipo,2);
+             break;
     }
     }
     
@@ -560,4 +603,90 @@ public class GameState {
     }
 
 
+    
+    
+    
+    
+
+    
+    public class Estado implements Cloneable{
+    int puntos_propios;
+    int puntos_rival;
+    int carton_propio;
+    int carton_rival;
+
+        public Estado() {
+        }
+
+       
+    @Override
+        public Object clone()  {
+             try {
+            Estado v = (Estado) super.clone();
+          
+            return v;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError(e);
+        }
+        }
+
+        public Estado(int puntos_propios, int puntos_rival, int carton_propio, int carton_rival) {
+            this.puntos_propios = puntos_propios;
+            this.puntos_rival = puntos_rival;
+            this.carton_propio = carton_propio;
+            this.carton_rival = carton_rival;
+        }
+
+        public int getPuntos_propios() {
+            return puntos_propios;
+        }
+
+        public void setPuntos_propios(int puntos_propios) {
+            this.puntos_propios = puntos_propios;
+        }
+
+        public int getPuntos_rival() {
+            return puntos_rival;
+        }
+
+        public void setPuntos_rival(int puntos_rival) {
+            this.puntos_rival = puntos_rival;
+        }
+
+        public int getCarton_propio() {
+            return carton_propio;
+        }
+
+        public void setCarton_propio(int carton_propio) {
+            this.carton_propio = carton_propio;
+        }
+
+        public int getCarton_rival() {
+            return carton_rival;
+        }
+
+        public void setCarton_rival(int carton_rival) {
+            this.carton_rival = carton_rival;
+        }
+    
+        public void actualizaPoints(Tipo t, int dif){
+        if(t==Tipo.Max){
+        this.puntos_propios+=dif;
+        }else{
+        this.puntos_rival+=dif;
+        
+        }
+        }
+        
+        public boolean esta38(Tipo t){
+        if(t==Tipo.Max){
+        return this.puntos_propios==38;
+        }else{
+        return this.puntos_rival==38;
+        
+        }
+        }
+    
+}
 }
