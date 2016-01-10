@@ -530,7 +530,7 @@ public class Computador extends Jugador implements Observer {
          
         GameState game_act=n.data;
          ArrayList <Carta> mano_copy=(ArrayList <Carta>) game_act.getManoActual();
-        System.out.println(mano_copy.size());
+  //      System.out.println(mano_copy.size());
         // if( mano_copy.isEmpty()) return;//caso base
          if( game_act.getMano().isEmpty()) return;//caso base
         
@@ -593,9 +593,9 @@ public class Computador extends Jugador implements Observer {
             }
             GameState max;
             if(t.data.isMax()){
-             max=Collections.min(gsHijos);
-            }else{
              max=Collections.max(gsHijos);
+            }else{
+             max=Collections.min(gsHijos);
             }
             t.data.valoracion=max.valoracion;
             t.data.elegido=max;
