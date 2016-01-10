@@ -451,6 +451,10 @@ public class Computador extends Jugador implements Observer {
     }
     
     }
+    public void movimientoPcNivel3(){
+      construyeArbolDeJuego();
+        
+    }
     
     public void actualizaBase(){
     int k;
@@ -490,7 +494,12 @@ public class Computador extends Jugador implements Observer {
       gameTree.data=juegoActual;  
         
         seteaHijos(gameTree);
+        int mejor=getBestWorstChild(gameTree);
+  
         printTree(gameTree);
+        System.out.println("Mejor: "+mejor);
+        System.out.println("Mejor: "+gameTree.data.elegido.cartaJugada);
+        
     }
     private void seteaHijos(TreeNode<GameState> n){
          
@@ -530,9 +539,13 @@ public class Computador extends Jugador implements Observer {
                 for(TreeNode h: currentNode.children){
                 nextLevel.add(h);
                 }
-                 System.out.println("\nmano: "+currentNode.data.getMano());
-                System.out.println(" mesa"+currentNode.data.getMesa());
+                //System.out.println("\nmano: "+currentNode.data.getMano());
+                //System.out.println(" mesa"+currentNode.data.getMesa());
                 System.out.println(" puntos: "+currentNode.data.getEstado().puntos_propios+" "+currentNode.data.getEstado().puntos_rival);
+                System.out.println(" carton: "+currentNode.data.getEstado().carton_propio+" "+currentNode.data.getEstado().carton_rival);
+                System.out.println("Valoracion "+currentNode.data.valoracion);
+                System.out.println(" Tipo: "+currentNode.data.tipo);
+            
             }
             System.out.println();
             currentLevel = nextLevel;
@@ -541,6 +554,31 @@ public class Computador extends Jugador implements Observer {
         }
 
     }
+    
+    private int getBestWorstChild(TreeNode<GameState> t){
+    
+        LinkedList <TreeNode<GameState>> hijos= (LinkedList <TreeNode<GameState>>) t.children;
+        if(hijos.isEmpty()) return t.data.getValoracionCruda();
+    else{
+            ArrayList<GameState> gsHijos=new ArrayList<GameState>();
+            for(TreeNode n:hijos){
+                getBestWorstChild(n);
+                gsHijos.add((GameState) n.data);
+               
+            }
+            GameState max;
+            if(t.data.isMax()){
+             max=Collections.min(gsHijos);
+            }else{
+             max=Collections.max(gsHijos);
+            }
+            t.data.valoracion=max.valoracion;
+            t.data.elegido=max;
+            
+//Aqui hay que ver si es max o min
+            return max.valoracion;
+        }
+    }
     private void imprimirGameTree(TreeNode<GameState> n){
          GameState game_act=n.data;
         
@@ -548,6 +586,8 @@ public class Computador extends Jugador implements Observer {
          
                
     }
+    
+    
     /***** arbol de juego  end ****************/
     
     

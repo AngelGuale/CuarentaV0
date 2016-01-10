@@ -12,7 +12,8 @@ import java.util.Collections;
  *
  * @author Usuario
  */
-public class GameState {
+
+public class GameState implements Comparable<GameState>{
     private ArrayList <Carta> mesa;
     private ArrayList <Carta> caidas;
     int[] base=new int[11];
@@ -25,6 +26,17 @@ public class GameState {
     private Estado estado;
     Carta cartaJugada;
     Carta mejorJugada;
+    GameState elegido;
+    
+    @Override
+    public int compareTo(GameState o) {
+          if(this.valoracion<o.valoracion){
+        return -1;
+        }else if(this.valoracion==o.valoracion) return 0;
+       else if(this.valoracion>o.valoracion) return 1;
+        return 0;
+    }
+
         public enum Tipo{Min, Max}
     Tipo tipo;
     private ArrayList <Carta> mano_probable;
@@ -173,7 +185,7 @@ public class GameState {
             ArrayList<Carta> mano_probable3=(ArrayList<Carta>) this.getManoActual().clone();
                   Estado e3;
             e3 = (Estado) this.getEstado().clone();
-      ArrayList<Carta> caidas3=(ArrayList<Carta>) this.getCaidas().clone();
+            ArrayList<Carta> caidas3=(ArrayList<Carta>) this.getCaidas().clone();
             
             marcaParaLLevar(c, mesa3);
             
@@ -328,7 +340,7 @@ public class GameState {
     
     public void marcaParaLLevar(Carta c,ArrayList <Carta> mesa ){
       //  ArrayList <Carta> mesa=this.getMesa();
-
+        
     marcaCuantasMasHay(c.getNumero()-1, mesa);    
         
     }
@@ -413,7 +425,8 @@ public class GameState {
       
         if(this.isEscalera(marcadas, c)){
          actualizaPuntos(c, marcadas, estado, true, tipo);
-            
+           estado.actualizaCarton(tipo, marcadas.size()+1);
+        
             for(Carta m: marcadas){
             mesa.remove(m);
                 //jug.getLlevadas().add(m); hay que sumar al carton
@@ -440,12 +453,13 @@ public class GameState {
         if(marcadas.size()>1&&isEscaleraSuma(marcadas, c) ){
         
             actualizaPuntos(c, marcadas, estado, false, tipo);
-            
+            estado.actualizaCarton(tipo, marcadas.size()+1);
       
             
             for(Carta m: marcadas){
-           mesa.remove(m);
-           // caidas.add(m);//añade carta a caidas
+            mesa.remove(m);
+           
+            // caidas.add(m);//añade carta a caidas
            // jug.getLlevadas().add(m);
             
            // m.select=!m.select;
@@ -601,8 +615,14 @@ public class GameState {
     }
     return false;
     }
+public int getValoracionCruda(){
 
-
+    int v;
+    Estado e=this.getEstado();
+    v=e.carton_propio+e.puntos_propios-e.carton_rival-e.puntos_rival;
+    this.valoracion=v;
+    return v;
+}
     
     
     
@@ -679,6 +699,15 @@ public class GameState {
         }
         }
         
+        
+        public void actualizaCarton(Tipo t, int dif){
+        if(t==Tipo.Max){
+        this.carton_propio+=dif;
+        }else{
+        this.carton_rival+=dif;
+        
+        }
+        }
         public boolean esta38(Tipo t){
         if(t==Tipo.Max){
         return this.puntos_propios==38;
