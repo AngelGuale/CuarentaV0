@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
 public class Computador extends Jugador implements Observer {
  FrMesa fr;
  int[] base=new int[11];
- TreeNode <Carta> gameTree;
+ TreeNode <GameState> gameTree;
 
     protected FrMesa getFr() {
         return fr;
@@ -137,7 +137,7 @@ public class Computador extends Jugador implements Observer {
         if(getJuego().nivel==1){
         movimientoPcNv1();
         }else if(getJuego().nivel>=2){
-          movimientoPcNivel2();   
+          movimientoPcNivel3();   
         }
                
     }
@@ -453,7 +453,30 @@ public class Computador extends Jugador implements Observer {
     }
     public void movimientoPcNivel3(){
       construyeArbolDeJuego();
-        
+     Carta c=gameTree.data.elegido.cartaJugada;
+     c.setJugada(gameTree.data.elegido.jugada);
+     
+    System.out.print(c+" "+c.getJugada());
+      System.out.print(" caidas:"+getJuego().getCaidas().size());
+          System.out.println("\nmano: "+getMano()+"\n");
+    System.out.println("mesa"+getJuego().getMesa()+"\n");
+  
+      if(c.getJugada()==Carta.Jugada.LLEVA){
+        marcaParaLLevar(c);
+        }
+        else if(c.getJugada()==Carta.Jugada.LLEVA_SUMA){
+        marcaParaLlevarSuma(c);
+        }
+  
+                    c.getCb().arriba=true;
+                   Timer t=new Timer();
+                   
+                   TimerTask mover= new MueveLuego(fr, c);
+                   
+                   fr.habilitar(false);
+                   
+                   t.schedule(mover, 2000);
+      
     }
     
     public void actualizaBase(){
@@ -489,14 +512,16 @@ public class Computador extends Jugador implements Observer {
     
     //************** aqui vamos a implementar el arbol de juego************///
     private void construyeArbolDeJuego(){
-        TreeNode <GameState> gameTree=new TreeNode<GameState>(null);
+        //TreeNode <GameState> gameTree=new TreeNode<GameState>(null);
+        gameTree=new TreeNode<GameState>(null);
+        
         GameState juegoActual=new GameState(this.getJuego().getMesa(), this.getJuego().getCaidas(), this.getMano(),this.getPuntos(),this.getJuego().getJugador().getPuntos(), this.getLlevadas().size(), this.getJuego().getJugador().getLlevadas().size(), null, Tipo.Max);
       gameTree.data=juegoActual;  
         
         seteaHijos(gameTree);
         int mejor=getBestWorstChild(gameTree);
   
-        printTree(gameTree);
+      //  printTree(gameTree);
         System.out.println("Mejor: "+mejor);
         System.out.println("Mejor: "+gameTree.data.elegido.cartaJugada);
         
@@ -512,7 +537,7 @@ public class Computador extends Jugador implements Observer {
         
         for(Carta c: mano_copy){
         ArrayList <GameState> hijos_data= game_act.getFutureWithCarta(c);
-            System.out.println("hijos :"+hijos_data.size());
+    //        System.out.println("hijos :"+hijos_data.size());
         for(GameState g: hijos_data){
             n.addChild(g);
                 }

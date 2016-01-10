@@ -27,7 +27,7 @@ public class GameState implements Comparable<GameState>{
     Carta cartaJugada;
     Carta mejorJugada;
     GameState elegido;
-    
+    Carta.Jugada jugada;
     @Override
     public int compareTo(GameState o) {
           if(this.valoracion<o.valoracion){
@@ -191,9 +191,10 @@ public class GameState implements Comparable<GameState>{
             
             simulaMovimiento(c, mesa3, mano_probable3, caidas3, e3, this.tipo);
            // carton_propio+=2;
-            
+
             GameState llevar_state=new GameState(mesa3, caidas3, actualizaMano(mano_probable3, c, mano3),e3, c,nuevoTipo(this.tipo));
-          futuros.add(llevar_state);
+            llevar_state.jugada=Carta.Jugada.LLEVA;
+            futuros.add(llevar_state);
         }else{
         
         //lanzar carta
@@ -212,7 +213,8 @@ public class GameState implements Comparable<GameState>{
        GameState lanzar=new GameState(mesa2, caidas2, actualizaMano(mano_probable2, c, mano2), e2, c, nuevoTipo(this.tipo));
    // GameState lanzar=(GameState) this.clone();
          lanzar.tipo=nuevoTipo(this.tipo);
-        futuros.add(lanzar);
+         lanzar.jugada=Carta.Jugada.TIRA;
+         futuros.add(lanzar);
        
         
         }
@@ -619,7 +621,9 @@ public int getValoracionCruda(){
 
     int v;
     Estado e=this.getEstado();
-    v=e.carton_propio+e.puntos_propios-e.carton_rival-e.puntos_rival;
+    v=e.carton_propio+2*e.puntos_propios-e.carton_rival-2*e.puntos_rival;
+     //v=e.puntos_propios-e.puntos_rival;
+    
     this.valoracion=v;
     return v;
 }
@@ -634,7 +638,7 @@ public int getValoracionCruda(){
     int puntos_rival;
     int carton_propio;
     int carton_rival;
-
+    
         public Estado() {
         }
 
