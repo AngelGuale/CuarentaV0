@@ -7,6 +7,8 @@ package cuarenta;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  *
@@ -18,6 +20,7 @@ public class GameState implements Comparable<GameState>{
     private ArrayList <Carta> caidas;
     int[] base=new int[11];
     private ArrayList <Carta> mano;
+    private ArrayList<DBUnit> base_db;
     //int puntos_propios;
     //int puntos_rival;
     //int carton_propio;
@@ -102,19 +105,29 @@ public class GameState implements Comparable<GameState>{
             mano_probable=new ArrayList <Carta>();
         actualizaBase();
         
-        
+        Collections.sort(this.base_db);
+        /*
         for (int i=1;i<10;i++){
             if(this.base[i]<2){
                 Carta c=new Carta(i, 1);
                 this.mano_probable.add(c);
             }
          }
+       */
+      
+        for (int i=0;i<4;i++){
+                DBUnit d=this.base_db.get(i);
+                if(d.cuantas<4){
+                        Carta c=new Carta(d.num_carta, 1);
+                        this.mano_probable.add(c);
+                             }
+        }
+         // System.out.println("Probable");
+           //System.out.println(this.base_db);
+             //   System.out.println(this.mano_probable);
+
        
-             //   Carta c=new Carta(5, 1);
-               // mano_probable.add(c);
-        
-                //Carta c2=new Carta(6, 1);
-                //mano_probable.add(c2);
+
         }
     }
     private GameState(ArrayList<Carta> mesa, ArrayList<Carta> caidas, ArrayList<Carta> mano, int puntos_propios, int puntos_rival, int carton_propio, int carton_rival) {
@@ -300,7 +313,7 @@ public class GameState implements Comparable<GameState>{
 
     private void actualizaBase(){
         int k;
-
+        /*
         for(int i=0; i<this.base.length; i++){
         this.base[i]=0;
         }
@@ -314,7 +327,22 @@ public class GameState implements Comparable<GameState>{
                 this.base[k]++;
                // System.out.println(base[k]);
         }
+                */
+        
+        this.base_db=new ArrayList<DBUnit>();
+        for(int i=1; i<11; i++){
+        this.base_db.add(new DBUnit(i, 0));
+        }
+            for(Carta c: this.mano){
+                k=c.getNumero();
+                this.base_db.get(k-1).aumentar();
 
+        }
+        for(Carta c: this.getCaidas()){
+            k=c.getNumero();
+    this.base_db.get(k-1).aumentar();
+ // System.out.println(base[k]);
+        }
     }
     
   
@@ -638,7 +666,35 @@ public int getValoracionCruda(){
     
     
     
+    public class DBUnit implements Comparable<DBUnit>{
+        int num_carta;
+        int cuantas;
 
+        public DBUnit(int num_carta, int cuantas) {
+            this.num_carta = num_carta;
+            this.cuantas = cuantas;
+        }
+
+        @Override
+        public String toString() {
+            return "#"+this.num_carta +" "+this.cuantas; //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public int compareTo(DBUnit o) {
+          if(this.cuantas<o.cuantas){
+        return -1;
+        }else if(this.cuantas==o.cuantas) return 0;
+       else if(this.cuantas>o.cuantas) return 1;
+        return 0;
+        }
+        
+        public void aumentar(){
+        this.cuantas++;
+        }
+        
+        
+    }
     
     public class Estado implements Cloneable{
     int puntos_propios;
@@ -647,6 +703,7 @@ public int getValoracionCruda(){
     int carton_rival;
     
         public Estado() {
+            
         }
 
        
