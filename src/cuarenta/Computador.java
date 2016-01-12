@@ -403,7 +403,7 @@ public class Computador extends Jugador implements Observer {
     
     public void movimientoPcNivel2(){
     //arbol
-        construyeArbolDeJuego();
+    //    construyeArbolDeJuego();
         
     colocaGanancia();
     imprimeGanancias();

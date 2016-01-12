@@ -235,23 +235,37 @@ public class GameState implements Comparable<GameState>{
          lanzar.tipo=nuevoTipo(this.tipo);
          lanzar.jugada=Carta.Jugada.TIRA;
          futuros.add(lanzar);
-       
-        
+         
+         
+        }
+        if(hayParaLlevar(c, (ArrayList<Carta>) this.mesa.clone())){
+                  ArrayList<Carta> mesa4=(ArrayList<Carta>) this.getMesa().clone();
+            ArrayList<Carta> mano4=(ArrayList<Carta>) this.getMano().clone();
+            ArrayList<Carta> mano_probable4=(ArrayList<Carta>) this.getManoActual().clone();
+                  Estado e4;
+            e4 = (Estado) this.getEstado().clone();
+            ArrayList<Carta> caidas4=(ArrayList<Carta>) this.getCaidas().clone();
+            
+            marcaParaLlevarSuma(c, mesa4);
+                    simulaMovimiento(c, mesa4, mano_probable4, caidas4, e4, this.tipo);
+     GameState llevarsuma_state=new GameState(mesa4, caidas4, actualizaMano(mano_probable4, c, mano4),e4, c,nuevoTipo(this.tipo));
+            llevarsuma_state.jugada=Carta.Jugada.LLEVA_SUMA;
+            futuros.add(llevarsuma_state);
+      
         }
         //GameState futuro=new GameState(mesa, caidas, mano, puntos_propios, puntos_rival, carton_propio, carton_rival, null);
         
     
-    
     return futuros;
     }
-   
     
-      private ArrayList<Integer> sumasPosibles(){
+    
+    private ArrayList<Integer> sumasPosibles(ArrayList<Carta> mesa ){
    
-    if(this.getMesa().isEmpty()){
+    if(!mesa.isEmpty()){
        
     ArrayList <Carta> mesaPrima;
-        mesaPrima=(ArrayList<Carta>) this.getMesa().clone();
+        mesaPrima=(ArrayList<Carta>) mesa.clone();
         ArrayList<Integer> sumas=new ArrayList();
         
         //int sumas[]=new int[mesaPrima.size()];
@@ -277,7 +291,7 @@ public class GameState implements Comparable<GameState>{
             
         }
         
-         System.out.print(" "+sumas+" ");
+        // System.out.println(" "+sumas+" ");
         return sumas;
         }else return null;
     }
@@ -287,6 +301,18 @@ public class GameState implements Comparable<GameState>{
     if(c.compareTo(x)==0) return true;
     
     }
+        return false;
+    }
+    
+    
+    private boolean hayParaLlevar(Carta c, ArrayList<Carta> mesa){
+        ArrayList<Integer> sumas=sumasPosibles(mesa);
+        if(sumas==null) return false;
+        for(Integer i:sumas){
+            if(i==c.getNumero())
+                return true;
+           
+        }
         return false;
     }
     
@@ -382,21 +408,21 @@ public class GameState implements Comparable<GameState>{
         
     }
     
-    public void marcaParaLlevarSuma(Carta c){
-           ArrayList <Carta> mesa=this.getMesa();
-       ArrayList <Carta> marcadas=existeSuma(c.getNumero());
+    public void marcaParaLlevarSuma(Carta c, ArrayList <Carta> mesa){
+         //  ArrayList <Carta> mesa=this.getMesa();
+       ArrayList <Carta> marcadas=existeSuma(c.getNumero(), mesa);
        for(Carta x: marcadas){
        x.select=true;
        }
        marcaCuantasMasHay(c.getNumero(), mesa);
     
     }
-    public ArrayList <Carta> existeSuma(int suma){
+    public ArrayList <Carta> existeSuma(int suma, ArrayList <Carta> mesa){
         ArrayList <Carta> marcadas=new ArrayList<Carta>();
         if(suma>7) return marcadas;
         
-       for(Carta c1: this.getMesa()){
-           for(Carta c2: this.getMesa()){
+       for(Carta c1: mesa){
+           for(Carta c2: mesa){
                 if(!c2.equals(c1)&& (c1.getNumero()+c2.getNumero())==suma){
                     marcadas.add(c1);
                     marcadas.add(c2);
@@ -415,7 +441,7 @@ public class GameState implements Comparable<GameState>{
         ArrayList <Carta> marcadas;
     for(Carta c: getMano()){
         if(c.getNumero()<=7){
-              marcadas=existeSuma(c.getNumero());
+              marcadas=existeSuma(c.getNumero(), mesa);
         if(!marcadas.isEmpty()){
         cartaYmarcadas.add(c);
         cartaYmarcadas.addAll(marcadas);
@@ -499,7 +525,7 @@ public class GameState implements Comparable<GameState>{
              caidas.add(m);//añade carta a caidas
            // jug.getLlevadas().add(m);
             
-           // m.select=!m.select;
+            m.select=!m.select;
     
             }
      
