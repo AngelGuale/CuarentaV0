@@ -137,7 +137,7 @@ public class GameState implements Comparable<GameState>{
      
             }
         else{
-            for (int i=0;i<6;i++){
+            for (int i=0;i<7;i++){
                 // k = (int) (Math.random()*10);
                    DBUnit d=this.base_db.get(9-i);
                    if(d.cuantas<4){
@@ -180,7 +180,7 @@ public class GameState implements Comparable<GameState>{
     private void setAlphaBetaInicial(){
         int v=getValoracionCruda();
         this.alpha=v-20;
-        this.beta=v+20;
+        this.beta=v+30;
     }
     
     public void cloneAlphaBetaInicial(int alfa, int beta){
@@ -231,7 +231,7 @@ public class GameState implements Comparable<GameState>{
         
         int v=this.getValoracionCruda();
         if(v<this.alpha || v>this.beta) {
-            System.out.println("Corto "+this.alpha+" "+this.beta+" "+v+" ");
+         //   System.out.println("Corto "+this.alpha+" "+this.beta+" "+v+" ");
             return  futuros;
         }
         
@@ -727,7 +727,7 @@ public int getValoracionCruda(){
 
     int v;
     Estado e=this.getEstado();
-    v=e.carton_propio+e.puntos_propios-e.carton_rival-e.puntos_rival;
+    v=(int)(e.carton_propio+1.5*e.puntos_propios-e.carton_rival-1.5*e.puntos_rival);
      //v=e.puntos_propios-e.puntos_rival;
     v=2*v;
     if(this.estado.carton_propio>=20) v+=10;
