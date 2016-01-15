@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -48,8 +50,11 @@ public class CartaButton extends JButton implements Observer, Comparable <CartaB
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                
                 CartaButton c=(CartaButton)e.getSource();
-                if(c.carta!=null && c.habilitada){
+                 FrMesa fr=(FrMesa) c.getParent().getParent().getParent().getParent().getParent();
+
+                if(c.carta!=null && c.habilitada && !fr.juego.turnoPC){
 
                         if(tipo==0){
 
@@ -65,8 +70,8 @@ public class CartaButton extends JButton implements Observer, Comparable <CartaB
 
                                 }
                         }
-                        if(c.tipo==1){
-                        FrMesa fr=(FrMesa) c.getParent().getParent().getParent().getParent().getParent();
+                        if(c.tipo==1 ){
+                      //  FrMesa fr=(FrMesa) c.getParent().getParent().getParent().getParent().getParent();
 
                         if(fr.juego.movimiento(c.carta, fr, fr.juego.getJugador()))
                         {
@@ -85,10 +90,11 @@ public class CartaButton extends JButton implements Observer, Comparable <CartaB
                    else fr.suspenderJuego();
                             return;
                             }
-
-                        fr.juego.getJugador().jugCambio();
-                        fr.juego.getJugador().notifyObservers();
-
+                                fr.juego.turnoPC=true;
+                                
+                       // fr.juego.getJugador().jugCambio();
+                       // fr.juego.getJugador().notifyObservers();
+                            
                         }
                         } 
                 }

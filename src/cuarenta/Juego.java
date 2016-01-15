@@ -42,7 +42,7 @@ public class Juego {
     private ArrayList <Carta> caidas;
     protected boolean carrera;
     protected ModoCarrera modoCarrera;
-    
+    public boolean turnoPC;
     public int nivel;
     
 

@@ -6,6 +6,8 @@ package cuarenta;
 
 import cuarenta.GameState.Tipo;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 
@@ -13,11 +15,11 @@ import javax.swing.JOptionPane;
  *
  * @author Mtech
  */
-public class Computador extends Jugador implements Observer {
+public class Computador extends Jugador implements Observer, Runnable {
  FrMesa fr;
  int[] base=new int[11];
  TreeNode <GameState> gameTree;
-
+Thread hilo;
     protected FrMesa getFr() {
         return fr;
     }
@@ -146,7 +148,7 @@ public class Computador extends Jugador implements Observer {
     
     //ArrayList <Carta> cartaYmarcadas=new ArrayList();
     Carta ultima=this.getJuego().getOponente(this).getUltima();
-        
+    if(ultima==null) return false;
     if(ultima.compareTo(c)==0)
     {
         if(this.getJuego().getMesa().contains(ultima)){
@@ -368,6 +370,7 @@ public class Computador extends Jugador implements Observer {
     public void movimientoPcNv1(){
     colocaGanancia();
     imprimeGanancias();
+    if(this.getMano().isEmpty()) return;
     
     Carta c=obtieneCartaMayorGanancia();
     System.out.print(c+" "+c.getJugada());
@@ -404,6 +407,7 @@ public class Computador extends Jugador implements Observer {
     public void movimientoPcNivel2(){
     //arbol
     //    construyeArbolDeJuego();
+    if(this.getMano().isEmpty()) return;
         
     colocaGanancia();
     imprimeGanancias();
@@ -452,7 +456,9 @@ public class Computador extends Jugador implements Observer {
     
     }
     public void movimientoPcNivel3(){
-      construyeArbolDeJuego();
+      if(this.getMano().isEmpty()) return;
+    
+        construyeArbolDeJuego();
      Carta c=gameTree.data.elegido.cartaJugada;
      c.setJugada(gameTree.data.elegido.jugada);
      
@@ -515,8 +521,9 @@ public class Computador extends Jugador implements Observer {
         //TreeNode <GameState> gameTree=new TreeNode<GameState>(null);
         gameTree=new TreeNode<GameState>(null);
         
-        GameState juegoActual=new GameState(this.getJuego().getMesa(), this.getJuego().getCaidas(), this.getMano(),this.getPuntos(),this.getJuego().getJugador().getPuntos(), this.getLlevadas().size(), this.getJuego().getJugador().getLlevadas().size(), null, Tipo.Max);
-      gameTree.data=juegoActual;  
+        GameState juegoActual=new GameState(this.getJuego().getMesa(), this.getJuego().getCaidas(), this.getMano(),this.getPuntos(),this.getJuego().getJugador().getPuntos(), this.getLlevadas().size(), this.getJuego().getJugador().getLlevadas().size(), this.getJuego().getJugador().getUltima(), Tipo.Max);
+      
+        gameTree.data=juegoActual;  
         
         seteaHijos(gameTree);
         int mejor=getBestWorstChild(gameTree);
@@ -612,6 +619,38 @@ public class Computador extends Jugador implements Observer {
                
     }
     
+  public void start() {
+    if(hilo == null) {
+        hilo = new Thread(this);
+        hilo.start();
+    }
+  }
+    @Override
+    public void run() {
+        
+     while(true){
+         
+         System.out.print("");
+         
+         if(this.getJuego().turnoPC){
+                movimientoPcNivel3();
+                this.getJuego().turnoPC=false;
+             try {
+                Thread.sleep(5000);
+             } catch (InterruptedException ex) {
+                Logger.getLogger(Computador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+             
+         }
+        
+   
+    }
+    }
+
+    void stop() {
+     hilo.stop();
+    hilo = null;
+    }
     
     /***** arbol de juego  end ****************/
     

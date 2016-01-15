@@ -76,6 +76,10 @@ public class FrMesa extends javax.swing.JFrame {
         this.menuTerminarJuego.setEnabled(jugando);
   
          juego.repartir(this);
+         juego.turnoPC=false;
+         
+         this.juego.getPc().start();
+        
    }
    
    
@@ -93,9 +97,11 @@ public class FrMesa extends javax.swing.JFrame {
         this.menuJuegoNuevo.setEnabled(!jugando);
          this.menuModoCarrera.setEnabled(!jugando);
         this.menuTerminarJuego.setEnabled(jugando);
-  
+        
+        
          juego.repartir(this);
-         
+         this.juego.getPc().start();
+        
          if(carrera){
             JOptionPane.showMessageDialog(null, "Modo carrera\n Nivel: "+juego.nivel);
          }
@@ -104,7 +110,9 @@ public class FrMesa extends javax.swing.JFrame {
    public void suspenderJuego(){
       
         juego.culminaJuego();
-      for(CartaButton c: this.manoJ1){
+       this.juego.getPc().stop();
+        
+        for(CartaButton c: this.manoJ1){
       c.carta=null;
       c.habilitada=true;
       }

@@ -31,6 +31,8 @@ public class GameState implements Comparable<GameState>{
     Carta mejorJugada;
     GameState elegido;
     Carta.Jugada jugada;
+    int alpha;
+    int beta;
     @Override
     public int compareTo(GameState o) {
           if(this.valoracion<o.valoracion){
@@ -59,35 +61,44 @@ public class GameState implements Comparable<GameState>{
         this.mejorJugada=null;
         this.tipo=t;
         
+       
         if(t==Tipo.Min){
-            this.mano_probable=new ArrayList <Carta>();
-        this.actualizaBase();
+            mano_probable=new ArrayList <Carta>();
+        actualizaBase();
         
-    
-        for (int i=1;i<10;i++){
-        
-            Carta c=new Carta(i, 1);
-            System.out.println("mano probable");
-                System.out.println(c);
-        
-        }
-        
-        
+        Collections.sort(this.base_db);
+        /*
         for (int i=1;i<10;i++){
             if(this.base[i]<2){
                 Carta c=new Carta(i, 1);
                 this.mano_probable.add(c);
-                System.out.println("mano probable");
-                System.out.println(c);
             }
          }
-       
-             //   Carta c=new Carta(5, 1);
-               // mano_probable.add(c);
-        
-                //Carta c2=new Carta(6, 1);
-                //mano_probable.add(c2);
+       */
+      
+         if(caidas.size()>10){
+        for (int i=0;i<6;i++){
+                DBUnit d=this.base_db.get(i);
+                if(d.cuantas<4){
+                        Carta c=new Carta(d.num_carta, 1);
+                        this.mano_probable.add(c);
+                             }
         }
+     
+            }
+        else{
+            for (int i=0;i<6;i++){
+                // k = (int) (Math.random()*10);
+                   DBUnit d=this.base_db.get(9-i);
+                   if(d.cuantas<4){
+                           Carta c=new Carta(d.num_carta, 1);
+                           this.mano_probable.add(c);
+                                }
+            }
+        }
+      //este es el constructor del inicio
+        }
+        this.setAlphaBetaInicial();
     }
     
     
@@ -114,20 +125,30 @@ public class GameState implements Comparable<GameState>{
             }
          }
        */
-      
-        for (int i=0;i<4;i++){
+        //if(false){
+       if(caidas.size()>10){
+        for (int i=0;i<6;i++){
                 DBUnit d=this.base_db.get(i);
                 if(d.cuantas<4){
                         Carta c=new Carta(d.num_carta, 1);
                         this.mano_probable.add(c);
                              }
         }
-         // System.out.println("Probable");
-           //System.out.println(this.base_db);
-             //   System.out.println(this.mano_probable);
-
-       
-
+     
+            }
+        else{
+            for (int i=0;i<6;i++){
+                // k = (int) (Math.random()*10);
+                   DBUnit d=this.base_db.get(9-i);
+                   if(d.cuantas<4){
+                           Carta c=new Carta(d.num_carta, 1);
+                           this.mano_probable.add(c);
+                                }
+            }
+        }
+       //  System.out.println("Probable");
+         //  System.out.println(this.base_db);
+           //   System.out.println(this.mano_probable);
         }
     }
     private GameState(ArrayList<Carta> mesa, ArrayList<Carta> caidas, ArrayList<Carta> mano, int puntos_propios, int puntos_rival, int carton_propio, int carton_rival) {
@@ -154,7 +175,19 @@ public class GameState implements Comparable<GameState>{
 
         return mano;
         
-}
+}   
+    
+    private void setAlphaBetaInicial(){
+        int v=getValoracionCruda();
+        this.alpha=v-20;
+        this.beta=v+20;
+    }
+    
+    public void cloneAlphaBetaInicial(int alfa, int beta){
+        
+        this.alpha=alfa;
+        this.beta=beta;
+    }
 
     public ArrayList<Carta> getManoActual() {
         
@@ -193,9 +226,16 @@ public class GameState implements Comparable<GameState>{
             // System.out.println("\nmano: "+this.getMano());
              //   System.out.println(" mesa"+this.getMesa());
              //System.out.println("\nmano: "+this.tipo);
-                
+        
         ArrayList<GameState> futuros=new ArrayList<GameState>();
-               
+        
+        int v=this.getValoracionCruda();
+        if(v<this.alpha || v>this.beta) {
+            System.out.println("Corto "+this.alpha+" "+this.beta+" "+v+" ");
+            return  futuros;
+        }
+        
+          
         
         
         //se puede llevar carta
@@ -214,6 +254,7 @@ public class GameState implements Comparable<GameState>{
 
             GameState llevar_state=new GameState(mesa3, caidas3, actualizaMano(mano_probable3, c, mano3),e3, c,nuevoTipo(this.tipo));
             llevar_state.jugada=Carta.Jugada.LLEVA;
+            llevar_state.cloneAlphaBetaInicial(this.alpha, this.beta);
             futuros.add(llevar_state);
         }else{
         
@@ -234,6 +275,8 @@ public class GameState implements Comparable<GameState>{
    // GameState lanzar=(GameState) this.clone();
          lanzar.tipo=nuevoTipo(this.tipo);
          lanzar.jugada=Carta.Jugada.TIRA;
+         lanzar.cloneAlphaBetaInicial(this.alpha, this.beta);
+            
          futuros.add(lanzar);
          
          
@@ -248,8 +291,10 @@ public class GameState implements Comparable<GameState>{
             
             marcaParaLlevarSuma(c, mesa4);
                     simulaMovimiento(c, mesa4, mano_probable4, caidas4, e4, this.tipo);
-     GameState llevarsuma_state=new GameState(mesa4, caidas4, actualizaMano(mano_probable4, c, mano4),e4, c,nuevoTipo(this.tipo));
+            GameState llevarsuma_state=new GameState(mesa4, caidas4, actualizaMano(mano_probable4, c, mano4),e4, c,nuevoTipo(this.tipo));
             llevarsuma_state.jugada=Carta.Jugada.LLEVA_SUMA;
+            llevarsuma_state.cloneAlphaBetaInicial(this.alpha, this.beta);
+            
             futuros.add(llevarsuma_state);
       
         }
@@ -682,9 +727,15 @@ public int getValoracionCruda(){
 
     int v;
     Estado e=this.getEstado();
-    v=6*e.carton_propio+2*e.puntos_propios-3*e.carton_rival-e.puntos_rival;
+    v=e.carton_propio+e.puntos_propios-e.carton_rival-e.puntos_rival;
      //v=e.puntos_propios-e.puntos_rival;
+    v=2*v;
     if(this.estado.carton_propio>=20) v+=10;
+    if(this.estado.carton_rival>=20) v-=10;
+    if(this.estado.puntos_propios>=40) v+=100;
+    if(this.estado.puntos_rival >=40) v-=100;
+   
+
     this.valoracion=v;
     return v;
 }
